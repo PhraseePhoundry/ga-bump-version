@@ -64,7 +64,6 @@ const pkg = getPackageJson();
   console.log('config words:', { setCustomVersionWords, majorWords, minorWords, patchWords });
 
   let version;
-  let customVersionNumber;
 
   // case if version-type found
   if (versionType) {
@@ -73,7 +72,6 @@ const pkg = getPackageJson();
   // case: if wording for SET CUSTOM VERSION found
   else if (messages.some((message) => setCustomVersionWords.some((word) => message.includes(word)))) {
     version = 'custom';
-    customVersionNumber = messages.match(/SET VERSION NUMBER {([^{\}]*)}/)[0]
   }
   // case: if wording for MAJOR found
   else if (messages.some((message) => majorWords.some((word) => message.includes(word)))) {
@@ -94,6 +92,22 @@ const pkg = getPackageJson();
   if (!version) {
     exitSuccess('No version keywords found, skipping bump.');
     return;
+  }
+
+  let versionNumbers = []
+  if (version === 'custom') {
+    messages.forEach(message => {
+      const matches = message.match(/SET VERSION NUMBER {([^{\}]*)}/)
+      if (matches.length > 0) {
+        versionNumbers = versionNumbers.concat(matches)
+      }
+    })
+  }
+
+  if (versionNumbers.length === 0) {
+    exitFailure('No custom version numbers found');
+    return;
+
   }
 
   // GIT logic
@@ -133,9 +147,9 @@ const pkg = getPackageJson();
     console.log('current 1:', current, '/', 'version:', version);
 
     let newVersion;
-    if(customVersionNumber) {
+    if(version === 'custom') {
       const versionNumberRegex = new RegExp('^v?[0-9]+[.][0-9]+[.][0-9]+$');
-      if(!versionNumberRegex.test(customVersionNumber)) {
+      if(!versionNumberRegex.test(versionNumbers[0])) {
         exitFailure('Invalid custom version number provided')
       } else {
         newVersion = customVersionNumber.replace(/^v/, '');
