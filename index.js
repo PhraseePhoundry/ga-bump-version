@@ -151,14 +151,14 @@ const pkg = getPackageJson();
     let newVersion;
     if(version === 'custom') {
       console.log('---- custom new version ----')
-      console.log(versionNumbers)
-      console.log(versionNumbers[0])
       newVersion = versionNumbers[0].replace(/^v/, '');
+      console.log(newVersion)
     } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
     }
     console.log('newVersion 1:', newVersion);
     newVersion = `${tagPrefix}${newVersion}`;
+    console.log(newVersion)
     if (process.env['INPUT_SKIP-COMMIT'] !== 'true') {
       await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
     }
