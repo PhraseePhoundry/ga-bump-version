@@ -161,12 +161,7 @@ const pkg = getPackageJson();
     if(version === 'custom') {
       console.log('---- custom new version ----')
       console.log(versionNumbers[0])
-      const versionNumberRegex = new RegExp('^v?[0-9]+[.][0-9]+[.][0-9]+$');
-      if(!versionNumberRegex.test(versionNumbers[0])) {
-        exitFailure('Invalid custom version number provided')
-      } else {
-        newVersion = customVersionNumber.replace(/^v/, '');
-      }
+      newVersion = versionNumbers[0].replace(/^v/, '');
     } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
     }
