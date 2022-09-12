@@ -104,12 +104,13 @@ const pkg = getPackageJson();
         versionNumbers.push(number[0])
       }
     })
+    if (versionNumbers.length === 0) {
+      exitFailure('No custom version numbers found');
+      return;
+    }
   }
 
-  if (versionNumbers.length === 0) {
-    exitFailure('No custom version numbers found');
-    return;
-  }
+
 
   // GIT logic
   try {
