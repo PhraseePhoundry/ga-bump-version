@@ -17,18 +17,18 @@ inputs:
     required: false
   minor-wording:
     description: 'Words list that trigger a minor version bump'
-    default: 'feat,minor'
+    default: 'MINOR VERSION INCREMENT,new feature,minor'
     required: false
   major-wording:
     description: 'Words list that trigger a major version bump'
-    default: 'BREAKING CHANGE,major'
+    default: 'MAJOR VERSION INCREMENT,major,breaking change'
     required: false
   patch-wording:
     description: 'Words list that trigger a patch version bump'
     required: false
-  rc-wording:
-    description: 'Words list that trigger a rc version bump'
-    default: 'pre-alpha,pre-beta,pre-rc'
+  set-custom-version-wording:
+    description: 'Words list that trigger setting a specific version'
+    default: 'SET VERSION NUMBER'
     required: false
   skip-tag:
     description: 'Avoid to add a TAG to the version update commit'
@@ -65,10 +65,6 @@ inputs:
   bump-policy:
     description: 'Set version bump ignore policy'
     default: 'all'
-    required: false
-  push:
-    description: '[DEPRECATED] Set to false to skip pushing the new tag'
-    default: 'true'
     required: false
 outputs:
   newTag:
