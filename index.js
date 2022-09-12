@@ -55,13 +55,13 @@ const pkg = getPackageJson();
   }
 
   // input wordings for MAJOR, MINOR, PATCH, PRE-RELEASE
-  const setVersionWords = process.env['INPUT_SET-CUSTOM-VERSION-WORDING'].split(',');
+  const setCustomVersionWords = process.env['INPUT_SET-CUSTOM-VERSION-WORDING'].split(',');
   const majorWords = process.env['INPUT_MAJOR-WORDING'].split(',');
   const minorWords = process.env['INPUT_MINOR-WORDING'].split(',');
   // patch is by default empty, and '' would always be true in the includes(''), thats why we handle it separately
   const patchWords = process.env['INPUT_PATCH-WORDING'] ? process.env['INPUT_PATCH-WORDING'].split(',') : null;
 
-  console.log('config words:', { setVersionWords, majorWords, minorWords, patchWords });
+  console.log('config words:', { setCustomVersionWords, majorWords, minorWords, patchWords });
 
   let version;
   let customVersionNumber;
@@ -71,7 +71,7 @@ const pkg = getPackageJson();
     version = versionType;
   }
   // case: if wording for SET CUSTOM VERSION found
-  else if (messages.some((message) => customWords.some((word) => message.includes(word)))) {
+  else if (messages.some((message) => setCustomVersionWords.some((word) => message.includes(word)))) {
     version = 'custom';
     customVersionNumber = messages.match(/SET VERSION NUMBER {([^{\}]*)}/)[0]
   }
