@@ -98,9 +98,15 @@ const pkg = getPackageJson();
   if (version === 'custom') {
     messages.forEach(message => {
       const matches = message.match(/SET VERSION NUMBER {([^{\}]*)}/g)
+      console.log('--- matches ---')
+      console.log(matches)
       const versionNumberRegex = new RegExp('^v?[0-9]+[.][0-9]+[.][0-9]+$');
       for(let match of matches) {
-        versionNumbers.push(match.match(versionNumberRegex))
+        console.log('--- match ---')
+        console.log(match)
+        const number = match.match(versionNumberRegex)
+        console.log(number)
+        versionNumbers.push(number)
       }
     })
   }
