@@ -101,13 +101,14 @@ const pkg = getPackageJson();
       // const matches = message.match(/SET VERSION NUMBER {([^{\}]*)}/g)
       console.log('--- matches ---')
       console.log(matches)
-      const versionNumberRegex = new RegExp('v?[0-9]+[.][0-9]+[.][0-9]+');
+      const versionNumberRegex = new RegExp(/v?[0-9]+[.][0-9]+[.][0-9]+/g);
       for(let match of matches) {
         console.log('--- match ---')
         console.log(match)
         const number = match.match(versionNumberRegex)
+        console.log('--- version number ---')
         console.log(number)
-        versionNumbers.push(number)
+        versionNumbers.push(number[0])
       }
     })
   }
