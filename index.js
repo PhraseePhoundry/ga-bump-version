@@ -98,11 +98,16 @@ const pkg = getPackageJson();
   if (version === 'custom') {
     messages.forEach(message => {
       const matches = message.match(/SET VERSION NUMBER {([^{\}]*)}/)
+      console.log('--- matches ---')
+      console.log(message)
+      console.log(matches)
       if (matches.length > 0) {
         versionNumbers = versionNumbers.concat(matches)
       }
     })
   }
+  console.log('---- version numbers ----')
+  console.log(versionNumbers)
 
   if (versionNumbers.length === 0) {
     exitFailure('No custom version numbers found');
@@ -148,6 +153,8 @@ const pkg = getPackageJson();
 
     let newVersion;
     if(version === 'custom') {
+      console.log('---- custom new version ----')
+      console.log(versionNumbers[0])
       const versionNumberRegex = new RegExp('^v?[0-9]+[.][0-9]+[.][0-9]+$');
       if(!versionNumberRegex.test(versionNumbers[0])) {
         exitFailure('Invalid custom version number provided')
