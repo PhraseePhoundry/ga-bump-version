@@ -98,27 +98,17 @@ const pkg = getPackageJson();
   if (version === 'custom') {
     messages.forEach(message => {
       const matches = message.match(/SET VERSION NUMBER {v?[0-9]+[.][0-9]+[.][0-9]+}/g)
-      // const matches = message.match(/SET VERSION NUMBER {([^{\}]*)}/g)
-      console.log('--- matches ---')
-      console.log(matches)
       const versionNumberRegex = new RegExp(/v?[0-9]+[.][0-9]+[.][0-9]+/g);
       for(let match of matches) {
-        console.log('--- match ---')
-        console.log(match)
         const number = match.match(versionNumberRegex)
-        console.log('--- version number ---')
-        console.log(number)
         versionNumbers.push(number[0])
       }
     })
   }
-  console.log('---- version numbers ----')
-  console.log(versionNumbers)
 
   if (versionNumbers.length === 0) {
     exitFailure('No custom version numbers found');
     return;
-
   }
 
   // GIT logic
@@ -160,6 +150,7 @@ const pkg = getPackageJson();
     let newVersion;
     if(version === 'custom') {
       console.log('---- custom new version ----')
+      console.log(versionNumbers)
       console.log(versionNumbers[0])
       newVersion = versionNumbers[0].replace(/^v/, '');
     } else {
