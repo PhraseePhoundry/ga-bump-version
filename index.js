@@ -143,13 +143,13 @@ const pkg = getPackageJson();
     console.log('current 1:', current, '/', 'version:', version);
 
     let newVersion;
-    if(version === 'custom') {
-      console.log('---- custom new version ----')
-      newVersion = versionNumbers[0].replace(/^v/, '');
-      console.log(newVersion)
-    } else {
+    // if(version === 'custom') {
+    //   console.log('---- custom new version ----')
+    //   newVersion = versionNumbers[0].replace(/^v/, '');
+    //   console.log(newVersion)
+    // } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
-    }
+    // }
     console.log('newVersion 1:', newVersion);
     newVersion = `${tagPrefix}${newVersion}`;
     console.log(newVersion)
@@ -226,7 +226,6 @@ function runInWorkspace(command, args) {
   return new Promise((resolve, reject) => {
     console.log(command)
     console.log(args)
-    console.log(workspace)
     const child = spawn(command, args, { cwd: workspace });
     let isDone = false;
     const errorMessages = [];
