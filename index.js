@@ -82,17 +82,11 @@ const pkg = getPackageJson();
     version = 'minor';
   }
   // case: if wording for PATCH found
-  else if (patchWords && messages.some((message) => patchWords.some((word) => message.includes(word)))) {
+  else {
     version = 'patch';
   }
 
   console.log('version action:', version);
-
-  // case: if nothing of the above matches
-  if (!version) {
-    exitSuccess('No version keywords found, skipping bump.');
-    return;
-  }
 
   let versionNumbers = []
   if (version === 'custom') {
