@@ -168,7 +168,8 @@ const pkg = getPackageJson();
       console.log(commitMessage)
       console.log(newVersion)
       console.log(commitMessage.replace(/{{version}}/g, newVersion))
-      await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
+      await runInWorkspace('git', ['commit', '-a', '-m', 'ci bump test commit message']);
+      // await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
       console.log('--- run in workspace completed ---')
     }
 
