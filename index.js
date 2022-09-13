@@ -227,6 +227,9 @@ function logError(error) {
 function runInWorkspace(command, args) {
   console.log('--- run in workspace ---')
   return new Promise((resolve, reject) => {
+    console.log(command)
+    console.log(args)
+    console.log(workspace)
     const child = spawn(command, args, { cwd: workspace });
     let isDone = false;
     const errorMessages = [];
