@@ -162,8 +162,7 @@ const pkg = getPackageJson();
       console.log(commitMessage)
       console.log(newVersion)
       console.log(commitMessage.replace(/{{version}}/g, newVersion))
-      await runInWorkspace('git', ['commit', '-a', '-m', 'ci bump test commit message']);
-      // await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
+      await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
       console.log('--- run in workspace completed ---')
     }
 
@@ -184,19 +183,6 @@ const pkg = getPackageJson();
     newVersion = `${tagPrefix}${newVersion}`;
     console.log(`newVersion after merging tagPrefix+newVersion: ${newVersion}`);
     console.log(`::set-output name=newTag::${newVersion}`);
-    try {
-      // to support "actions/checkout@v1"
-      if (process.env['INPUT_SKIP-COMMIT'] !== 'true') {
-        await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
-      }
-    } catch (e) {
-      console.log('--- failed git commit ---')
-      console.log(e)
-      console.warn(
-        'git commit failed because you are using "actions/checkout@v2"; ' +
-          'but that doesnt matter because you dont need that git commit, that\'s only for "actions/checkout@v1"',
-      );
-    }
 
     const remoteRepo = `https://${process.env.GITHUB_ACTOR}:${process.env.GITHUB_TOKEN}@github.com/${process.env.GITHUB_REPOSITORY}.git`;
     if (process.env['INPUT_SKIP-TAG'] !== 'true') {
