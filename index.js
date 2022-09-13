@@ -103,9 +103,11 @@ const pkg = getPackageJson();
       console.log('--- matches ---')
       console.log(matches)
       const versionNumberRegex = new RegExp(/v?[0-9]+[.][0-9]+[.][0-9]+/g);
-      for(let match of matches) {
-        const number = match.match(versionNumberRegex)
-        versionNumbers.push(number[0])
+      if(matches) {
+        for(let match of matches) {
+          const number = match.match(versionNumberRegex)
+          versionNumbers.push(number[0])
+        }
       }
     })
     if (versionNumbers.length === 0) {
@@ -113,8 +115,6 @@ const pkg = getPackageJson();
       return;
     }
   }
-
-
 
   // GIT logic
   try {
