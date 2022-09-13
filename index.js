@@ -143,9 +143,10 @@ const pkg = getPackageJson();
     console.log('current 1:', current, '/', 'version:', version);
 
     let newVersion;
+    let newSemVersion;
     if(version === 'custom') {
       console.log('---- custom new version ----')
-      const newSemVersion = versionNumbers[0].replace(/^v/, '');
+      newSemVersion = versionNumbers[0].replace(/^v/, '');
       console.log(newSemVersion)
       newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
     } else {
@@ -173,7 +174,12 @@ const pkg = getPackageJson();
     await runInWorkspace('npm', ['version', '--allow-same-version=true', '--git-tag-version=false', current]);
     console.log('current 2:', current, '/', 'version:', version);
     console.log('execute npm version now with the new version:', version);
-    newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
+    if (version === 'custom') {
+      newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
+    } else {
+      newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
+
+    }
     // fix #166 - npm workspaces
     // https://github.com/phips28/gh-action-bump-version/issues/166#issuecomment-1142640018
     newVersion = newVersion.split(/\n/)[1] || newVersion;
@@ -223,24 +229,17 @@ function logError(error) {
 }
 
 function runInWorkspace(command, args) {
-  console.log('--- run in workspace ---')
   return new Promise((resolve, reject) => {
-    console.log(command)
-    console.log(args)
     const child = spawn(command, args, { cwd: workspace });
     let isDone = false;
     const errorMessages = [];
     child.on('error', (error) => {
-      console.log('--- error ---')
-      console.log(error)
       if (!isDone) {
         isDone = true;
         reject(error);
       }
     });
     child.stderr.on('data', (chunk) => errorMessages.push(chunk));
-    console.log('--- error messages ---')
-    console.log(errorMessages)
     child.on('exit', (code) => {
       if (!isDone) {
         if (code === 0) {
