@@ -248,12 +248,16 @@ function runInWorkspace(command, args) {
     let isDone = false;
     const errorMessages = [];
     child.on('error', (error) => {
+      console.log('--- error ---')
+      console.log(error)
       if (!isDone) {
         isDone = true;
         reject(error);
       }
     });
     child.stderr.on('data', (chunk) => errorMessages.push(chunk));
+    console.log('--- error messages ---')
+    console.log(errorMessages)
     child.on('exit', (code) => {
       if (!isDone) {
         if (code === 0) {
