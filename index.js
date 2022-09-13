@@ -143,13 +143,14 @@ const pkg = getPackageJson();
     console.log('current 1:', current, '/', 'version:', version);
 
     let newVersion;
-    // if(version === 'custom') {
-    //   console.log('---- custom new version ----')
-    //   newVersion = versionNumbers[0].replace(/^v/, '');
-    //   console.log(newVersion)
-    // } else {
+    if(version === 'custom') {
+      console.log('---- custom new version ----')
+      const newSemVersion = versionNumbers[0].replace(/^v/, '');
+      console.log(newSemVersion)
+      newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
+    } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
-    // }
+    }
     console.log('newVersion 1:', newVersion);
     newVersion = `${tagPrefix}${newVersion}`;
     console.log(newVersion)
