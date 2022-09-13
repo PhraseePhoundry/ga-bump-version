@@ -165,6 +165,8 @@ const pkg = getPackageJson();
     console.log(newVersion)
     if (process.env['INPUT_SKIP-COMMIT'] !== 'true') {
       console.log('--- skip commit not true ---')
+      console.log(commitMessage)
+      console.log(newVersion)
       await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
       console.log('--- run in workspace completed ---')
     }
