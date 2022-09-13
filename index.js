@@ -164,7 +164,9 @@ const pkg = getPackageJson();
     newVersion = `${tagPrefix}${newVersion}`;
     console.log(newVersion)
     if (process.env['INPUT_SKIP-COMMIT'] !== 'true') {
+      console.log('--- skip commit not true ---')
       await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
+      console.log('--- run in workspace completed ---')
     }
 
     // now go to the actual branch to perform the same versioning
