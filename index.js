@@ -92,10 +92,6 @@ const pkg = getPackageJson();
   if (version === 'custom') {
     messages.forEach(message => {
       const matches = message.match(/SET VERSION NUMBER {v?[0-9]+[.][0-9]+[.][0-9]+}/g)
-      console.log('--- message ---')
-      console.log(message)
-      console.log('--- matches ---')
-      console.log(matches)
       const versionNumberRegex = new RegExp(/v?[0-9]+[.][0-9]+[.][0-9]+/g);
       if(matches) {
         for(let match of matches) {
@@ -162,6 +158,7 @@ const pkg = getPackageJson();
       console.log(commitMessage)
       console.log(newVersion)
       console.log(commitMessage.replace(/{{version}}/g, newVersion))
+      await runInWorkspace('git', ['status']);
       await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
       console.log('--- run in workspace completed ---')
     }
