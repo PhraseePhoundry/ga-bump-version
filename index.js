@@ -167,6 +167,7 @@ const pkg = getPackageJson();
       console.log('--- skip commit not true ---')
       console.log(commitMessage)
       console.log(newVersion)
+      console.log(commitMessage.replace(/{{version}}/g, newVersion))
       await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
       console.log('--- run in workspace completed ---')
     }
@@ -241,6 +242,7 @@ function logError(error) {
 }
 
 function runInWorkspace(command, args) {
+  console.log('--- run in workspace ---')
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { cwd: workspace });
     let isDone = false;
