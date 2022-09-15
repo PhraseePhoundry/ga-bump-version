@@ -3,12 +3,17 @@ const { execSync, spawn } = require('child_process');
 const { existsSync } = require('fs');
 const { EOL } = require('os');
 const path = require('path');
-import {
-  MAJOR_VERSION_WORDING,
-  MINOR_VERSION_WORDING,
-  SET_CUSTOM_VERSION_WORDING,
-  VERSION_BUMP_COMMIT_MESSAGE_TEXT,
-} from '../consts';
+// import {
+//   MAJOR_VERSION_WORDING,
+//   MINOR_VERSION_WORDING,
+//   SET_CUSTOM_VERSION_WORDING,
+//   VERSION_BUMP_COMMIT_MESSAGE_TEXT,
+// } from '../consts';
+
+const MAJOR_VERSION_WORDING = ['MAJOR VERSION INCREMENT', 'major', 'breaking change'];
+const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'];
+const SET_CUSTOM_VERSION_WORDING = ['SET VERSION NUMBER'];
+const VERSION_BUMP_COMMIT_MESSAGE_TEXT = 'ci: version bump to {{version}}';
 
 // Change working directory if user defined PACKAGEJSON_DIR
 if (process.env.PACKAGEJSON_DIR) {
