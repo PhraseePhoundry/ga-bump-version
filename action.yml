@@ -9,6 +9,9 @@ jobs:
       - name: Bump version
         id: version-bump
         uses: ./actions/bump-version.yml
+        outputs:
+          newTag:
+            description: 'The newly created tag'
       - name: 'Output Step'
         env:
           NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
