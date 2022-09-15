@@ -3,6 +3,12 @@ const { execSync, spawn } = require('child_process');
 const { existsSync } = require('fs');
 const { EOL } = require('os');
 const path = require('path');
+import {
+  MAJOR_VERSION_WORDING,
+  MINOR_VERSION_WORDING,
+  SET_CUSTOM_VERSION_WORDING,
+  VERSION_BUMP_COMMIT_MESSAGE_TEXT,
+} from '../consts';
 
 // Change working directory if user defined PACKAGEJSON_DIR
 if (process.env.PACKAGEJSON_DIR) {
@@ -16,69 +22,39 @@ const pkg = getPackageJson();
 (async () => {
   const event = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_EVENT_PATH) : {};
 
-  if (!event.commits && !process.env['INPUT_VERSION-TYPE']) {
+  if (!event.commits) {
     console.log("Couldn't find any commits in this event, incrementing patch version...");
   }
 
-  const allowedTypes = ['major', 'minor', 'patch', 'rc']
-  if (process.env['INPUT_VERSION-TYPE'] && !allowedTypes.includes(process.env['INPUT_VERSION-TYPE'])) {
-    exitFailure('Invalid version type');
-    return;
-  }
-
-  const versionType = process.env['INPUT_VERSION-TYPE'];
-  const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
+  const tagPrefix = 'v';
   console.log('tagPrefix:', tagPrefix);
   const messages = event.commits ? event.commits.map((commit) => commit.message + '\n' + commit.body) : [];
 
-  const commitMessage = process.env['INPUT_COMMIT-MESSAGE'] || 'ci: version bump to {{version}}';
+  const commitMessage = VERSION_BUMP_COMMIT_MESSAGE_TEXT;
   console.log('commit messages:', messages);
 
-  const bumpPolicy = process.env['INPUT_BUMP-POLICY'] || 'all';
   const commitMessageRegex = new RegExp(commitMessage.replace(/{{version}}/g, `${tagPrefix}\\d+\\.\\d+\\.\\d+`), 'ig');
 
-  let isVersionBump = false;
-
-  if (bumpPolicy === 'all') {
-    isVersionBump = messages.find((message) => commitMessageRegex.test(message)) !== undefined;
-  } else if (bumpPolicy === 'last-commit') {
-    isVersionBump = messages.length > 0 && commitMessageRegex.test(messages[messages.length - 1]);
-  } else if (bumpPolicy === 'ignore') {
-    console.log('Ignoring any version bumps in commits...');
-  } else {
-    console.warn(`Unknown bump policy: ${bumpPolicy}`);
-  }
-
+  const isVersionBump = messages.find((message) => commitMessageRegex.test(message)) !== undefined;
   if (isVersionBump) {
     exitSuccess('No action necessary because we found a previous bump!');
     return;
   }
 
-  // input wordings for MAJOR, MINOR, PATCH, PRE-RELEASE
-  const setCustomVersionWords = process.env['INPUT_SET-CUSTOM-VERSION-WORDING'].split(',');
-  const majorWords = process.env['INPUT_MAJOR-WORDING'].split(',');
-  const minorWords = process.env['INPUT_MINOR-WORDING'].split(',');
-  // patch is by default empty, and '' would always be true in the includes(''), thats why we handle it separately
-  const patchWords = process.env['INPUT_PATCH-WORDING'] ? process.env['INPUT_PATCH-WORDING'].split(',') : null;
-
-  console.log('config words:', { setCustomVersionWords, majorWords, minorWords, patchWords });
+  console.log('config words:', { SET_CUSTOM_VERSION_WORDING, MAJOR_VERSION_WORDING, MINOR_VERSION_WORDING });
 
   let version;
 
-  // case if version-type found
-  if (versionType) {
-    version = versionType;
-  }
   // case: if wording for SET CUSTOM VERSION found
-  else if (messages.some((message) => setCustomVersionWords.some((word) => message.includes(word)))) {
+  if (messages.some((message) => SET_CUSTOM_VERSION_WORDING.some((word) => message.includes(word)))) {
     version = 'custom';
   }
   // case: if wording for MAJOR found
-  else if (messages.some((message) => majorWords.some((word) => message.includes(word)))) {
+  else if (messages.some((message) => MAJOR_VERSION_WORDING.some((word) => message.includes(word)))) {
     version = 'major';
   }
   // case: if wording for MINOR found
-  else if (messages.some((message) => minorWords.some((word) => message.includes(word)))) {
+  else if (messages.some((message) => MINOR_VERSION_WORDING.some((word) => message.includes(word)))) {
     version = 'minor';
   }
   // case: if wording for PATCH found
@@ -88,18 +64,18 @@ const pkg = getPackageJson();
 
   console.log('version action:', version);
 
-  let versionNumbers = []
+  let versionNumbers = [];
   if (version === 'custom') {
-    messages.forEach(message => {
-      const matches = message.match(/SET VERSION NUMBER {v?[0-9]+[.][0-9]+[.][0-9]+}/g)
+    messages.forEach((message) => {
+      const matches = message.match(/SET VERSION NUMBER {v?[0-9]+[.][0-9]+[.][0-9]+}/g);
       const versionNumberRegex = new RegExp(/v?[0-9]+[.][0-9]+[.][0-9]+/g);
-      if(matches) {
-        for(let match of matches) {
-          const number = match.match(versionNumberRegex)
-          versionNumbers.push(number[0])
+      if (matches) {
+        for (let match of matches) {
+          const number = match.match(versionNumberRegex);
+          versionNumbers.push(number[0]);
         }
       }
-    })
+    });
     if (versionNumbers.length === 0) {
       exitFailure('No custom version numbers found');
       return;
@@ -126,10 +102,6 @@ const pkg = getPackageJson();
     } else {
       currentBranch = /refs\/[a-zA-Z]+\/(.*)/.exec(process.env.GITHUB_REF)[1];
     }
-    if (process.env['INPUT_TARGET-BRANCH']) {
-      // We want to override the branch that we are pulling / pushing to
-      currentBranch = process.env['INPUT_TARGET-BRANCH'];
-    }
     console.log('currentBranch:', currentBranch);
 
     if (!currentBranch) {
@@ -144,26 +116,17 @@ const pkg = getPackageJson();
 
     let newVersion;
     let newSemVersion;
-    if(version === 'custom') {
-      console.log('---- custom new version ----')
+    if (version === 'custom') {
       newSemVersion = versionNumbers[0].replace(/^v/, '');
-      console.log(newSemVersion)
       newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
     } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
     }
     console.log('newVersion 1:', newVersion);
     newVersion = `${tagPrefix}${newVersion}`;
-    console.log(newVersion)
-    if (process.env['INPUT_SKIP-COMMIT'] !== 'true') {
-      console.log('--- skip commit not true ---')
-      console.log(commitMessage)
-      console.log(newVersion)
-      console.log(commitMessage.replace(/{{version}}/g, newVersion))
-      await runInWorkspace('git', ['status']);
-      await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
-      console.log('--- run in workspace completed ---')
-    }
+    console.log(newVersion);
+    await runInWorkspace('git', ['status']);
+    await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
 
     // now go to the actual branch to perform the same versioning
     if (isPullRequest) {
@@ -178,7 +141,6 @@ const pkg = getPackageJson();
       newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
     } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
-
     }
     // fix #166 - npm workspaces
     // https://github.com/phips28/gh-action-bump-version/issues/166#issuecomment-1142640018
@@ -189,17 +151,9 @@ const pkg = getPackageJson();
     console.log(`::set-output name=newTag::${newVersion}`);
 
     const remoteRepo = `https://${process.env.GITHUB_ACTOR}:${process.env.GITHUB_TOKEN}@github.com/${process.env.GITHUB_REPOSITORY}.git`;
-    if (process.env['INPUT_SKIP-TAG'] !== 'true') {
-      await runInWorkspace('git', ['tag', newVersion]);
-      if (process.env['INPUT_SKIP-PUSH'] !== 'true') {
-        await runInWorkspace('git', ['push', remoteRepo, '--follow-tags']);
-        await runInWorkspace('git', ['push', remoteRepo, '--tags']);
-      }
-    } else {
-      if (process.env['INPUT_SKIP-PUSH'] !== 'true') {
-        await runInWorkspace('git', ['push', remoteRepo]);
-      }
-    }
+    await runInWorkspace('git', ['tag', newVersion]);
+    await runInWorkspace('git', ['push', remoteRepo, '--follow-tags']);
+    await runInWorkspace('git', ['push', remoteRepo, '--tags']);
   } catch (e) {
     logError(e);
     exitFailure('Failed to bump version');

@@ -1,0 +1,16 @@
+name: Automated Version Bump
+description: Automated version bump for npm packages.
+runs:
+  using: node12
+  main: scripts/versionBump.js
+branding:
+  icon: chevron-up
+  color: blue
+inputs:
+  PACKAGEJSON_DIR:
+    description: 'Custom dir to the package'
+    default: ''
+    required: false
+outputs:
+  newTag:
+    description: 'The newly created tag'

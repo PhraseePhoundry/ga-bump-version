@@ -1,71 +1,33 @@
-name: Automated Version Bump
-description: Automated version bump for npm packages.
-runs:
-  using: node12
-  main: index.js
-branding:
-  icon: chevron-up
-  color: blue
-inputs:
-  tag-prefix:
-    description: 'Prefix that is used for the git tag'
-    default: ''
-    required: false
-  version-type:
-    description: 'Overrides version type from commit message'
-    default: ''
-    required: false
-  minor-wording:
-    description: 'Words list that trigger a minor version bump'
-    default: 'MINOR VERSION INCREMENT,new feature,minor'
-    required: false
-  major-wording:
-    description: 'Words list that trigger a major version bump'
-    default: 'MAJOR VERSION INCREMENT,major,breaking change'
-    required: false
-  patch-wording:
-    description: 'Words list that trigger a patch version bump'
-    required: false
-  set-custom-version-wording:
-    description: 'Words list that trigger setting a specific version'
-    default: 'SET VERSION NUMBER'
-    required: false
-  skip-tag:
-    description: 'Avoid to add a TAG to the version update commit'
-    default: 'false'
-    required: false
-  skip-commit:
-    description: 'Avoid to add a commit after the version is bumped'
-    default: 'false'
-    required: false
-  skip-push:
-    description: 'If true, skip pushing any commits or tags created after the version bump'
-    default: false
-    required: false
-  PACKAGEJSON_DIR:
-    description: 'Custom dir to the package'
-    default: ''
-    required: false
-  target-branch:
-    description: 'A separate branch to perform the version bump on'
-    default: ''
-    required: false
-  default:
-    description: 'Set a default version bump to use'
-    default: 'patch'
-    required: false
-  preid:
-    description: 'Set a custom preid for prerelease build'
-    default: 'rc'
-    required: false
-  commit-message:
-    description: 'Set a custom commit message for version bump commit'
-    default: ''
-    required: false
-  bump-policy:
-    description: 'Set version bump ignore policy'
-    default: 'all'
-    required: false
-outputs:
-  newTag:
-    description: 'The newly created tag'
+name: Automatic service versioning
+
+jobs:
+  bump-version:
+    name: Bump version on main
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: cat package.json
+        run: cat ./package.json
+      - name: Bump version
+        id: version-bump
+        uses: ./actions/bump-version.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'cat package.json'
+        run: cat ./package.json
+      - name: 'Output Step'
+        env:
+          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
+        run: echo "new tag $NEW_TAG"
+  update-jira:
+    name: Update Jira ticket
+    runs-on: ubuntu-latest
+    needs: [bump-version]
+
+    steps:
+      - name: Bump Jira
+        uses: ./actions/update-jira.yml
