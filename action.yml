@@ -7,6 +7,12 @@ outputs:
 runs:
   using: composite
   steps:
-    - id: bump-version
+    - name: Checkout source code
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+    - name: Bump version
+      id: bump-version
       uses: ./actions/bump-version
-    - uses: ./actions/update-jira
+    - name: Update Jira
+      uses: ./actions/update-jira
