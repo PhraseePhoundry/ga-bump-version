@@ -1,18 +1,9 @@
 name: Automatic service versioning
-description: Composite action to automatically bump service version and update Jira
+description: Automated version bump for npm packages.
+runs:
+  using: node12
+  main: scripts/versionBump.js
+
 outputs:
   newTag:
     description: 'The newly created tag'
-    value: ${{ steps.bump-version.outputs.newTag }}
-runs:
-  using: composite
-  steps:
-    - name: Checkout source code
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.ref }}
-    - name: Bump version
-      id: bump-version
-      uses: ./actions/bump-version
-    - name: Update Jira
-      uses: ./actions/update-jira
