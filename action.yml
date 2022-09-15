@@ -1,8 +1,12 @@
-name: Action to bump service version and update Jira
-
-jobs:
-  bump-version:
-    uses: ./actions/bump-version.yml
-  update-jira:
-    needs: bump-version
-    uses: ./actions/update-jira.yml
+name: Automatic service versioning
+description: Composite action to automatically bump service version and update Jira
+outputs:
+  newTag:
+    description: 'The newly created tag'
+    value: ${{ steps.bump-version.outputs.newTag }}
+runs:
+  using: composite
+  steps:
+    - id: bump-version
+      uses: ./actions/bump-version
+    - uses: ./actions/update-jira
