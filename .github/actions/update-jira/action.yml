@@ -1,0 +1,5 @@
+name: Update Jira
+description: Automates Jira with ticket information.
+runs:
+  using: node12
+  main: scripts/updateJira.js

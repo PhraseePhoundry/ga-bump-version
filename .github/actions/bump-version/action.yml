@@ -1,0 +1,9 @@
+name: Automatic service versioning
+description: Automated version bump for npm packages.
+runs:
+  using: node12
+  main: scripts/versionBump.js
+
+outputs:
+  newTag:
+    description: 'The newly created tag'
