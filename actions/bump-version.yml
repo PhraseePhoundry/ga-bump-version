@@ -1,4 +1,4 @@
-name: Automated Version Bump
+name: Automatic service versioning
 description: Automated version bump for npm packages.
 runs:
   using: node12
@@ -11,6 +11,7 @@ inputs:
     description: 'Custom dir to the package'
     default: ''
     required: false
+
 outputs:
   newTag:
     description: 'The newly created tag'

@@ -1,41 +1,8 @@
-name: Automatic service versioning
+name: Action to bump service version and update Jira
 
 jobs:
   bump-version:
-    name: Bump version on main
-    description: Automated version bump for npm packages.
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Bump version
-        id: version-bump
-        runs:
-          using: node12
-          main: scripts/versionBump.js
-        branding:
-          icon: chevron-up
-          color: blue
-        inputs:
-          PACKAGEJSON_DIR:
-            description: 'Custom dir to the package'
-            default: ''
-            required: false
-        outputs:
-          newTag:
-            description: 'The newly created tag'
-      - name: 'Output Step'
-        env:
-          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
-        run: echo "new tag $NEW_TAG"
-
+    uses: ./actions/bump-version.yml
   update-jira:
-    name: Update Jira ticket
-    runs-on: ubuntu-latest
-    needs: [bump-version]
-
-    steps:
-      - name: Update Jira
-        id: update-jira
-        runs:
-          using: node12
-          main: scripts/updateJira.js
+    needs: bump-version
+    uses: ./actions/update-jira.yml
