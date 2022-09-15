@@ -3,3 +3,7 @@ description: Automates Jira with ticket information.
 runs:
   using: node12
   main: ./updateJira.js
+inputs:
+  new-tag:
+    description: New tag for the service
+    required: true
