@@ -3,12 +3,23 @@ name: Automatic service versioning
 jobs:
   bump-version:
     name: Bump version on main
+    description: Automated version bump for npm packages.
     runs-on: ubuntu-latest
 
     steps:
       - name: Bump version
         id: version-bump
-        uses: ./actions/bump-version.yml
+        runs:
+          using: node12
+          main: scripts/versionBump.js
+        branding:
+          icon: chevron-up
+          color: blue
+        inputs:
+          PACKAGEJSON_DIR:
+            description: 'Custom dir to the package'
+            default: ''
+            required: false
         outputs:
           newTag:
             description: 'The newly created tag'
@@ -23,5 +34,8 @@ jobs:
     needs: [bump-version]
 
     steps:
-      - name: Bump Jira
-        uses: ./actions/update-jira.yml
+      - name: Update Jira
+        id: update-jira
+        runs:
+          using: node12
+          main: scripts/updateJira.js
