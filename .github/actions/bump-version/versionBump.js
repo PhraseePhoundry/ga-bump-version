@@ -119,7 +119,7 @@ const pkg = getPackageJson();
     if (version === 'custom') {
       newSemVersion = getHighestVersionNumber(versionNumbers);
       console.log(`highest custom version number found: ${newSemVersion}`)
-      newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
+      newVersion = execSync(`npm version --git-tag-version=false v${newSemVersion}`).toString().trim().replace(/^v/, '');
     } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
     }
