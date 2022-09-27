@@ -8,7 +8,9 @@
     "end-to-end-test": "jest --roots=tests/end-to-end --testTimeout=300000 --runInBand",
     "format": "prettier --write ."
   },
-  "dependencies": {},
+  "dependencies": {
+    "semver": "^7.3.7"
+  },
   "devDependencies": {
     "@types/jest": "^27.0.1",
     "dotenv": "^10.0.0",

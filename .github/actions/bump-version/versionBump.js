@@ -1,19 +1,15 @@
 // test
 const { execSync, spawn } = require('child_process');
 const { existsSync } = require('fs');
-const { EOL } = require('os');
+const { EOL, version } = require('os');
 const path = require('path');
-// import {
-//   MAJOR_VERSION_WORDING,
-//   MINOR_VERSION_WORDING,
-//   SET_CUSTOM_VERSION_WORDING,
-//   VERSION_BUMP_COMMIT_MESSAGE_TEXT,
-// } from '../consts';
+const { semver } = require('semver');
 
 const MAJOR_VERSION_WORDING = ['MAJOR VERSION INCREMENT', 'major', 'breaking change'];
 const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'];
 const SET_CUSTOM_VERSION_WORDING = ['SET VERSION NUMBER'];
 const VERSION_BUMP_COMMIT_MESSAGE_TEXT = 'ci: version bump to {{version}}';
+const TAG_PREFIX = 'v'
 
 // Change working directory if user defined PACKAGEJSON_DIR
 if (process.env.PACKAGEJSON_DIR) {
@@ -31,14 +27,13 @@ const pkg = getPackageJson();
     console.log("Couldn't find any commits in this event, incrementing patch version...");
   }
 
-  const tagPrefix = 'v';
-  console.log('tagPrefix:', tagPrefix);
+  console.log('tagPrefix:', TAG_PREFIX);
   const messages = event.commits ? event.commits.map((commit) => commit.message + '\n' + commit.body) : [];
 
   const commitMessage = VERSION_BUMP_COMMIT_MESSAGE_TEXT;
   console.log('commit messages:', messages);
 
-  const commitMessageRegex = new RegExp(commitMessage.replace(/{{version}}/g, `${tagPrefix}\\d+\\.\\d+\\.\\d+`), 'ig');
+  const commitMessageRegex = new RegExp(commitMessage.replace(/{{version}}/g, `${TAG_PREFIX}\\d+\\.\\d+\\.\\d+`), 'ig');
 
   const isVersionBump = messages.find((message) => commitMessageRegex.test(message)) !== undefined;
   if (isVersionBump) {
@@ -122,13 +117,13 @@ const pkg = getPackageJson();
     let newVersion;
     let newSemVersion;
     if (version === 'custom') {
-      newSemVersion = versionNumbers[0].replace(/^v/, '');
+      newSemVersion = getHighestVersionNumber(versionNumbers);
       newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
     } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
     }
     console.log('newVersion 1:', newVersion);
-    newVersion = `${tagPrefix}${newVersion}`;
+    newVersion = `${TAG_PREFIX}${newVersion}`;
     console.log(newVersion);
     await runInWorkspace('git', ['status']);
     await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
@@ -147,11 +142,9 @@ const pkg = getPackageJson();
     } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
     }
-    // fix #166 - npm workspaces
-    // https://github.com/phips28/gh-action-bump-version/issues/166#issuecomment-1142640018
     newVersion = newVersion.split(/\n/)[1] || newVersion;
     console.log('newVersion 2:', newVersion);
-    newVersion = `${tagPrefix}${newVersion}`;
+    newVersion = `${TAG_PREFIX}${newVersion}`;
     console.log(`newVersion after merging tagPrefix+newVersion: ${newVersion}`);
     console.log(`::set-output name=newTag::${newVersion}`);
 
@@ -209,5 +202,11 @@ function runInWorkspace(command, args) {
       }
     });
   });
-  //return execa(command, args, { cwd: workspace });
+}
+
+// function for getting the highest version number, if multiple custom versions are found
+function getHighestVersionNumber(versions) {
+  const versionNumbers = versions.map(version => semver.clean(version))
+
+  return versionNumbers.sort(semver.rcompare)[0]
 }
