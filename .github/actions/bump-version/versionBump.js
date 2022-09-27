@@ -118,11 +118,10 @@ const pkg = getPackageJson();
     let newSemVersion;
     if (version === 'custom') {
       newSemVersion = getHighestVersionNumber(versionNumbers)
-      // newSemVersion = versionNumbers[0].replace(/^v/, '')
-      // const newComputedSemVersion = getHighestVersionNumber(versionNumbers);
-      console.log('******************************')
-      console.log(`new version number: ${newSemVersion}`)
-      // console.log(`highest computed custom version: ${newComputedSemVersion}`)
+      if(!semver.gt(newSemVersion, current)) {
+        // console.log('New custom version must be higher than current version')
+        throw new Error('New custom version must be higher than current version')
+      }
       newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
     } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
