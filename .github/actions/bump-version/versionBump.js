@@ -118,6 +118,7 @@ const pkg = getPackageJson();
     let newSemVersion;
     if (version === 'custom') {
       newSemVersion = getHighestVersionNumber(versionNumbers);
+      console.log(`highest custom version number found: ${newSemVersion}`)
       newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
     } else {
       newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
@@ -206,7 +207,11 @@ function runInWorkspace(command, args) {
 
 // function for getting the highest version number, if multiple custom versions are found
 function getHighestVersionNumber(versions) {
+  console.log('----------------')
+  console.log(versions)
   const versionNumbers = versions.map(version => semver.clean(version))
+  console.log(versionNumbers)
+  console.log(versionNumbers.sort(semver.rcompare)[0])
 
   return versionNumbers.sort(semver.rcompare)[0]
 }
