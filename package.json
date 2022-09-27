@@ -1,25 +1,16 @@
 {
   "name": "gh-action-bump-version",
   "version": "9.0.31",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/phips28/gh-action-bump-version.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/phips28/gh-action-bump-version/issues"
-  },
-  "homepage": "https://github.com/phips28/gh-action-bump-version#readme",
   "private": true,
-  "main": "index.js",
   "scripts": {
     "start": "node ./index.js",
     "test": "npm run end-to-end-test",
-    "end-to-end-test": "jest --roots=tests/end-to-end --testTimeout=300000 --runInBand"
+    "end-to-end-test": "jest --roots=tests/end-to-end --testTimeout=300000 --runInBand",
+    "format": "prettier --write ."
   },
-  "dependencies": {},
+  "dependencies": {
+    "semver": "^7.3.7"
+  },
   "devDependencies": {
     "@types/jest": "^27.0.1",
     "dotenv": "^10.0.0",
