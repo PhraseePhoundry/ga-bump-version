@@ -3,7 +3,7 @@ const { execSync, spawn } = require('child_process');
 const { existsSync } = require('fs');
 const { EOL, version } = require('os');
 const path = require('path');
-const { semver } = require('semver');
+const { SemVer } = require('semver');
 
 const MAJOR_VERSION_WORDING = ['MAJOR VERSION INCREMENT', 'major', 'breaking change'];
 const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'];
@@ -206,7 +206,7 @@ function runInWorkspace(command, args) {
 
 // function for getting the highest version number, if multiple custom versions are found
 function getHighestVersionNumber(versions) {
-  const versionNumbers = versions.map(version => semver.clean(version))
+  const versionNumbers = versions.map(version => SemVer.clean(version))
 
-  return versionNumbers.sort(semver.rcompare)[0]
+  return versionNumbers.sort(SemVer.rcompare)[0]
 }
