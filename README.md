@@ -1,44 +1,40 @@
-## gh-action-bump-version
+# ga-bump-version
 
-GitHub Action for automated npm version bump.
+This repository contains a GitHub Action for carrying out an automated npm version bump. The action bumps the version in `package.json` and pushes it back to the repo as a new commit. This repository was originally a fork of [`phips28/gh-action-bump-version`](https://github.com/phips28/gh-action-bump-version). 
 
-This Action bumps the version in package.json and pushes it back to the repo.
-It is meant to be used on every successful merge to master but
-you'll need to configured that workflow yourself. You can look to the
-[`.github/workflows/push.yml`](./.github/workflows/push.yml) file in this project as an example.
+> ❗ Important note: this repository is **public**, as is required by GitHub when working with reusable actions and workflows. Care should be taken when committing or reviewing code in this respository to ensure sensitive information is not leaked.
 
-### Workflow
 
-- Based on the commit messages, increment the version from the latest release.
-  - If the string "BREAKING CHANGE", "major" or the Attention pattern `refactor!: drop support for Node 6` is found anywhere in any of the commit messages or descriptions the major
-    version will be incremented.
-  - If a commit message begins with the string "feat" or includes "minor" then the minor version will be increased. This works
-    for most common commit metadata for feature additions: `"feat: new API"` and `"feature: new API"`.
-  - All other changes will increment the patch version.
-- Push the bumped npm version in package.json back into the repo.
-- Push a tag for the new version back into the repo.
+# Usage
 
-#### **default:**
+## Inputs
 
-Set a default version bump to use (optional - defaults to patch). Example:
+This action uses git commit messages to determine how to update the semantic version number.
 
-```yaml
-- name: 'Automated Version Bump'
-  uses: 'phips28/gh-action-bump-version@master'
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  with:
-    default: prerelease
+If a commit uses the phrase "SET VERSION NUMBER {xx.xx.xx}", the semantic version will be updated in its entirety to match the version number specified.
+```
+git commit -m "This is a commit to SET VERSION NUMBER {2.4.12}"
+1.0.0 ==> 2.4.12
 ```
 
-#### **PACKAGEJSON_DIR:**
-
-Param to parse the location of the desired package.json (optional). Example:
-
-```yaml
-- name: 'Automated Version Bump'
-  uses: 'phips28/gh-action-bump-version@master'
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    PACKAGEJSON_DIR: 'frontend'
+If a commit uses the words/phrases "MAJOR VERSION INCREMENT", "major", or "breaking change", the _major_ version will be incremented.
 ```
+git commit -m "This is a commit containing a breaking change"
+2.4.12 ==> 3.4.12
+```
+
+If a commit uses the words/phrases "MINOR VERSION INCREMENT", "new feature", "minor", the _minor_ version will be incremented.
+```
+git commit -m "This is a commit containing a new feature"
+3.4.12 ==> 3.5.12
+```
+
+If a commit contains none of the above keywords/phrases, the _patch_ version will be incremented.
+```
+git commit -m "This is a normal commit message"
+3.5.12 ==> 3.5.13
+```
+
+## Outputs
+
+This action updates the `package.json` for the repo with the new version number, and pushes a new commit. The action also explicitly outputs the new incremented version number, for use by other actions in a workflow.
