@@ -98,16 +98,7 @@ const pkg = getPackageJson();
     console.log(process.env.GITHUB_EMAIL)
 
 
-    let currentBranch;
-    let isPullRequest = false;
-    if (process.env.GITHUB_HEAD_REF) {
-      // Comes from a pull request
-      currentBranch = process.env.GITHUB_HEAD_REF;
-      console.log('~~~~ pull request true ~~~~')
-      isPullRequest = true;
-    } else {
-      currentBranch = /refs\/[a-zA-Z]+\/(.*)/.exec(process.env.GITHUB_REF)[1];
-    }
+    const currentBranch = /refs\/[a-zA-Z]+\/(.*)/.exec(process.env.GITHUB_REF)[1];
     console.log('currentBranch:', currentBranch);
 
     if (!currentBranch) {
@@ -138,10 +129,6 @@ const pkg = getPackageJson();
     await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
 
     // now go to the actual branch to perform the same versioning
-    if (isPullRequest) {
-      // First fetch to get updated local version of branch
-      await runInWorkspace('git', ['fetch']);
-    }
     await runInWorkspace('git', ['checkout', currentBranch]);
     await runInWorkspace('npm', ['version', '--allow-same-version=true', '--git-tag-version=false', current]);
     console.log('current 2:', current, '/', 'version:', version);
