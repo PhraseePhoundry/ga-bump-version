@@ -86,12 +86,17 @@ const pkg = getPackageJson();
   try {
     const current = pkg.version.toString();
     // set git user
-    await runInWorkspace('git', ['config', 'user.name', 'PhraseeUser']);
+    await runInWorkspace('git', ['config', 'user.name', `"${process.env.GITHUB_USER || 'Automated Version Bump'}"`]);
     await runInWorkspace('git', [
       'config',
       'user.email',
-      'dev@phrasee.co',
+      `"${process.env.GITHUB_EMAIL || 'ga-bump-version@users.noreply.github.com'}"`
     ]);
+
+    console.log('****************')
+    console.log(process.env.GITHUB_USER)
+    console.log(process.env.GITHUB_EMAIL)
+
 
     let currentBranch;
     let isPullRequest = false;
