@@ -86,11 +86,11 @@ const pkg = getPackageJson();
   try {
     const current = pkg.version.toString();
     // set git user
-    await runInWorkspace('git', ['config', 'user.name', `"${process.env.GITHUB_USER || 'Automated Version Bump'}"`]);
+    await runInWorkspace('git', ['config', 'user.name', `"${process.env.GITHUB_USER || 'Phrase CICD'}"`]);
     await runInWorkspace('git', [
       'config',
       'user.email',
-      `"${process.env.GITHUB_EMAIL || 'gh-action-bump-version@users.noreply.github.com'}"`,
+      `"${process.env.GITHUB_EMAIL || 'dev@phrasee.co'}"`,
     ]);
 
     let currentBranch;
