@@ -103,6 +103,7 @@ const pkg = getPackageJson();
     if (process.env.GITHUB_HEAD_REF) {
       // Comes from a pull request
       currentBranch = process.env.GITHUB_HEAD_REF;
+      console.log('~~~~ pull request true ~~~~')
       isPullRequest = true;
     } else {
       currentBranch = /refs\/[a-zA-Z]+\/(.*)/.exec(process.env.GITHUB_REF)[1];
