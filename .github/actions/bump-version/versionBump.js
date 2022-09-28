@@ -86,7 +86,7 @@ const pkg = getPackageJson();
   try {
     const current = pkg.version.toString();
     // set git user
-    await runInWorkspace('git', ['config', 'user.name', 'Phrasee Dev']);
+    await runInWorkspace('git', ['config', 'user.name', 'PhraseeUser']);
     await runInWorkspace('git', [
       'config',
       'user.email',
