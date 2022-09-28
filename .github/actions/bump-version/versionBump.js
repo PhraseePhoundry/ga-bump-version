@@ -150,6 +150,8 @@ const pkg = getPackageJson();
     newVersion = `${TAG_PREFIX}${newVersion}`;
     console.log(`newVersion after merging tagPrefix+newVersion: ${newVersion}`);
     console.log(`::set-output name=newTag::${newVersion}`);
+    console.log('--------')
+    console.log(process.env.GITHUB_ACTOR)
 
     const remoteRepo = `https://${process.env.GITHUB_ACTOR}:${process.env.GITHUB_TOKEN}@github.com/${process.env.GITHUB_REPOSITORY}.git`;
     await runInWorkspace('git', ['tag', newVersion]);
