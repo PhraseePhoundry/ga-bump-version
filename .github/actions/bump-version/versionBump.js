@@ -150,7 +150,7 @@ const pkg = getPackageJson();
     console.log('---- git tag ----')
     await runInWorkspace('git', ['tag', newVersion]);
     console.log('---- git push follow-tags ----')
-    await runInWorkspace('git', ['push', remoteRepo, '--follow-tags']);
+    await runInWorkspace('git', ['push', remoteRepo]);
     console.log('---- git push tags ----')
     await runInWorkspace('git', ['push', remoteRepo, '--tags']);
   } catch (e) {
