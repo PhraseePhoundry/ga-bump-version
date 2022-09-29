@@ -9,8 +9,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "semver": "^7.3.7",
-    "@actions/core": "^1.0.0"
+    "semver": "^7.3.7"
   },
   "devDependencies": {
     "@types/jest": "^27.0.1",

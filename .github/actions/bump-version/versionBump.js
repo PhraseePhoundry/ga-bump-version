@@ -2,17 +2,13 @@
 const { execSync, spawn } = require('child_process');
 const { EOL } = require('os');
 const semver = require('semver');
-const core = require('@actions/core');
 
 const MAJOR_VERSION_WORDING = ['MAJOR VERSION INCREMENT', 'major', 'breaking change'];
 const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'];
 const SET_CUSTOM_VERSION_WORDING = ['SET VERSION NUMBER'];
 const TAG_PREFIX = 'v'
 
-// const latestVersion = core.getInput('tag');
 const latestVersion = process.env.CURRENT_TAG;
-console.log('--- latest version ---')
-console.log(latestVersion)
 
 const workspace = process.env.GITHUB_WORKSPACE;
 
