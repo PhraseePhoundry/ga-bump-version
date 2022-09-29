@@ -1,24 +1,16 @@
 // test
 const { execSync, spawn } = require('child_process');
-const { existsSync } = require('fs');
-const { EOL, version } = require('os');
-const path = require('path');
+const { EOL } = require('os');
 const semver = require('semver');
 
 const MAJOR_VERSION_WORDING = ['MAJOR VERSION INCREMENT', 'major', 'breaking change'];
 const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'];
 const SET_CUSTOM_VERSION_WORDING = ['SET VERSION NUMBER'];
-const VERSION_BUMP_COMMIT_MESSAGE_TEXT = 'ci: version bump to {{version}}';
 const TAG_PREFIX = 'v'
 
-// Change working directory if user defined PACKAGEJSON_DIR
-if (process.env.PACKAGEJSON_DIR) {
-  process.env.GITHUB_WORKSPACE = `${process.env.GITHUB_WORKSPACE}/${process.env.PACKAGEJSON_DIR}`;
-  process.chdir(process.env.GITHUB_WORKSPACE);
-}
+const latestVersion = process.env.CURRENT_TAG;
 
 const workspace = process.env.GITHUB_WORKSPACE;
-const pkg = getPackageJson();
 
 (async () => {
   const event = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_EVENT_PATH) : {};
@@ -30,16 +22,7 @@ const pkg = getPackageJson();
   console.log('tagPrefix:', TAG_PREFIX);
   const messages = event.commits ? event.commits.map((commit) => commit.message + '\n' + commit.body) : [];
 
-  const commitMessage = VERSION_BUMP_COMMIT_MESSAGE_TEXT;
   console.log('commit messages:', messages);
-
-  const commitMessageRegex = new RegExp(commitMessage.replace(/{{version}}/g, `${TAG_PREFIX}\\d+\\.\\d+\\.\\d+`), 'ig');
-
-  const isVersionBump = messages.find((message) => commitMessageRegex.test(message)) !== undefined;
-  if (isVersionBump) {
-    exitSuccess('No action necessary because we found a previous bump!');
-    return;
-  }
 
   console.log('config words:', { SET_CUSTOM_VERSION_WORDING, MAJOR_VERSION_WORDING, MINOR_VERSION_WORDING });
 
@@ -84,7 +67,6 @@ const pkg = getPackageJson();
 
   // GIT logic
   try {
-    const current = pkg.version.toString();
     // set git user
     await runInWorkspace('git', ['config', 'user.name', `"${process.env.GITHUB_USER || 'Automated Version Bump'}"`]);
     await runInWorkspace('git', [
@@ -92,11 +74,6 @@ const pkg = getPackageJson();
       'user.email',
       `"${process.env.GITHUB_EMAIL || 'ga-bump-version@users.noreply.github.com'}"`
     ]);
-
-    console.log('****************')
-    console.log(process.env.GITHUB_USER)
-    console.log(process.env.GITHUB_EMAIL)
-
 
     const currentBranch = /refs\/[a-zA-Z]+\/(.*)/.exec(process.env.GITHUB_REF)[1];
     console.log('currentBranch:', currentBranch);
@@ -108,14 +85,14 @@ const pkg = getPackageJson();
 
     // do it in the current checked out github branch (DETACHED HEAD)
     // important for further usage of the package.json version
-    await runInWorkspace('npm', ['version', '--allow-same-version=true', '--git-tag-version=false', current]);
-    console.log('current 1:', current, '/', 'version:', version);
+    await runInWorkspace('npm', ['version', '--allow-same-version=true', '--git-tag-version=false', latestVersion]);
+    console.log('current 1:', latestVersion, '/', 'version:', version);
 
     let newVersion;
     let newSemVersion;
     if (version === 'custom') {
       newSemVersion = getHighestVersionNumber(versionNumbers)
-      if(!semver.gt(newSemVersion, current)) {
+      if(!semver.gt(newSemVersion, latestVersion)) {
         throw new Error('New custom version must be higher than current version')
       }
       newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
@@ -125,13 +102,11 @@ const pkg = getPackageJson();
     console.log('newVersion 1:', newVersion);
     newVersion = `${TAG_PREFIX}${newVersion}`;
     console.log(newVersion);
-    await runInWorkspace('git', ['status']);
-    await runInWorkspace('git', ['commit', '-a', '-m', commitMessage.replace(/{{version}}/g, newVersion)]);
 
     // now go to the actual branch to perform the same versioning
     await runInWorkspace('git', ['checkout', currentBranch]);
-    await runInWorkspace('npm', ['version', '--allow-same-version=true', '--git-tag-version=false', current]);
-    console.log('current 2:', current, '/', 'version:', version);
+    await runInWorkspace('npm', ['version', '--allow-same-version=true', '--git-tag-version=false', latestVersion]);
+    console.log('current 2:', latestVersion, '/', 'version:', version);
     console.log('execute npm version now with the new version:', version);
     if (version === 'custom') {
       newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
@@ -143,15 +118,9 @@ const pkg = getPackageJson();
     newVersion = `${TAG_PREFIX}${newVersion}`;
     console.log(`newVersion after merging tagPrefix+newVersion: ${newVersion}`);
     console.log(`::set-output name=newTag::${newVersion}`);
-    console.log('--------')
-    console.log(process.env.GITHUB_ACTOR)
 
     const remoteRepo = `https://${process.env.GITHUB_ACTOR}:${process.env.GITHUB_TOKEN}@github.com/${process.env.GITHUB_REPOSITORY}.git`;
-    console.log('---- git tag ----')
     await runInWorkspace('git', ['tag', newVersion]);
-    console.log('---- git push follow-tags ----')
-    await runInWorkspace('git', ['push', remoteRepo]);
-    console.log('---- git push tags ----')
     await runInWorkspace('git', ['push', remoteRepo, '--tags']);
   } catch (e) {
     logError(e);
@@ -160,12 +129,6 @@ const pkg = getPackageJson();
   }
   exitSuccess('Version bumped!');
 })();
-
-function getPackageJson() {
-  const pathToPackage = path.join(workspace, 'package.json');
-  if (!existsSync(pathToPackage)) throw new Error("package.json could not be found in your project's root.");
-  return require(pathToPackage);
-}
 
 function exitSuccess(message) {
   console.info(`✔  success   ${message}`);
