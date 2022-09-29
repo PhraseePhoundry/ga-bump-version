@@ -1,8 +1,6 @@
 // test
 const { execSync, spawn } = require('child_process');
-const { existsSync } = require('fs');
-const { EOL, version } = require('os');
-const path = require('path');
+const { EOL } = require('os');
 const semver = require('semver');
 const core = require('@actions/core');
 
@@ -11,7 +9,8 @@ const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'
 const SET_CUSTOM_VERSION_WORDING = ['SET VERSION NUMBER'];
 const TAG_PREFIX = 'v'
 
-const latestVersion = core.getInput('tag');
+// const latestVersion = core.getInput('tag');
+const latestVersion = process.env.CURRENT_TAG;
 console.log('--- latest version ---')
 console.log(latestVersion)
 
