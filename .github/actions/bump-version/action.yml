@@ -4,6 +4,11 @@ runs:
   using: node12
   main: ./versionBump.js
 
+inputs:
+  currentTag:
+    description: The current latest tag for the repo
+    required: true
+
 outputs:
   newTag:
     description: The newly created tag

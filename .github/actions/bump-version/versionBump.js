@@ -12,7 +12,6 @@ const SET_CUSTOM_VERSION_WORDING = ['SET VERSION NUMBER'];
 const TAG_PREFIX = 'v'
 
 const latestVersion = core.getInput('tag');
-console.log(`--- latest version ${latestVersion} ----`)
 
 const workspace = process.env.GITHUB_WORKSPACE;
 
