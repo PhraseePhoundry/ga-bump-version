@@ -15,55 +15,13 @@ const workspace = process.env.GITHUB_WORKSPACE;
 (async () => {
   const event = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_EVENT_PATH) : {};
 
-  if (!event.commits) {
-    console.log("Couldn't find any commits in this event, incrementing patch version...");
-  }
+  const messages = event.commits ? commits.map((commit) => commit.message + '\n' + commit.body) : [];
 
-  console.log('tagPrefix:', TAG_PREFIX);
-  const messages = event.commits ? event.commits.map((commit) => commit.message + '\n' + commit.body) : [];
+  // determine the release type - one of custom, major, minor, or patch
+  const releaseType = getReleaseType(messages)
+  console.log('Version release type:', releaseType);
 
-  console.log('commit messages:', messages);
-
-  console.log('config words:', { SET_CUSTOM_VERSION_WORDING, MAJOR_VERSION_WORDING, MINOR_VERSION_WORDING });
-
-  let version;
-
-  // case: if wording for SET CUSTOM VERSION found
-  if (messages.some((message) => SET_CUSTOM_VERSION_WORDING.some((word) => message.includes(word)))) {
-    version = 'custom';
-  }
-  // case: if wording for MAJOR found
-  else if (messages.some((message) => MAJOR_VERSION_WORDING.some((word) => message.includes(word)))) {
-    version = 'major';
-  }
-  // case: if wording for MINOR found
-  else if (messages.some((message) => MINOR_VERSION_WORDING.some((word) => message.includes(word)))) {
-    version = 'minor';
-  }
-  // case: if wording for PATCH found
-  else {
-    version = 'patch';
-  }
-
-  console.log('version action:', version);
-
-  let versionNumbers = [];
-  if (version === 'custom') {
-    messages.forEach((message) => {
-      const matches = message.match(/SET VERSION NUMBER {v?[0-9]+[.][0-9]+[.][0-9]+}/g);
-      const versionNumberRegex = new RegExp(/v?[0-9]+[.][0-9]+[.][0-9]+/g);
-      if (matches) {
-        for (let match of matches) {
-          const number = match.match(versionNumberRegex);
-          versionNumbers.push(number[0]);
-        }
-      }
-    });
-    if (versionNumbers.length === 0) {
-      exitFailure('No custom version numbers found');
-      return;
-    }
-  }
+  const customVersionNumbers = releaseType === 'custom' ? getCustomVersionNumbers(messages) : [];
 
   // GIT logic
   try {
@@ -76,48 +34,26 @@ const workspace = process.env.GITHUB_WORKSPACE;
     ]);
 
     const currentBranch = /refs\/[a-zA-Z]+\/(.*)/.exec(process.env.GITHUB_REF)[1];
-    console.log('currentBranch:', currentBranch);
 
     if (!currentBranch) {
       exitFailure('No branch found');
-      return;
     }
 
-    // do it in the current checked out github branch (DETACHED HEAD)
-    // important for further usage of the package.json version
-    await runInWorkspace('npm', ['version', '--allow-same-version=true', '--git-tag-version=false', latestVersion]);
-    console.log('current 1:', latestVersion, '/', 'version:', version);
+    console.log('Current branch:', currentBranch);
 
     let newVersion;
-    let newSemVersion;
     if (version === 'custom') {
-      newSemVersion = getHighestVersionNumber(versionNumbers)
-      if(!semver.gt(newSemVersion, latestVersion)) {
-        throw new Error('New custom version must be higher than current version')
+      const customVersion = getHighestVersionNumber(customVersionNumbers)
+      if (!semver.gt(customVersion, latestVersion)) {
+        exitFailure('New custom version must be higher than current version')
       }
-      newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
+      newVersion = `${TAG_PREFIX}${customVersion}`
     } else {
-      newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
+      newVersion = `${TAG_PREFIX}${incrementVersionNumber(latestVersion, version)}`;
     }
-    console.log('newVersion 1:', newVersion);
-    newVersion = `${TAG_PREFIX}${newVersion}`;
-    console.log(newVersion);
 
-    // now go to the actual branch to perform the same versioning
-    await runInWorkspace('git', ['checkout', currentBranch]);
-    await runInWorkspace('npm', ['version', '--allow-same-version=true', '--git-tag-version=false', latestVersion]);
-    console.log('current 2:', latestVersion, '/', 'version:', version);
-    console.log('execute npm version now with the new version:', version);
-    if (version === 'custom') {
-      newVersion = execSync(`npm version --git-tag-version=false ${newSemVersion}`).toString().trim().replace(/^v/, '');
-    } else {
-      newVersion = execSync(`npm version --git-tag-version=false ${version}`).toString().trim().replace(/^v/, '');
-    }
-    newVersion = newVersion.split(/\n/)[1] || newVersion;
-    console.log('newVersion 2:', newVersion);
-    newVersion = `${TAG_PREFIX}${newVersion}`;
-    console.log(`newVersion after merging tagPrefix+newVersion: ${newVersion}`);
-    console.log(`::set-output name=newTag::${newVersion}`);
+    console.log(`Current version: ${latestVersion}`)
+    console.log(`Version to update to: ${TAG_PREFIX}${newVersion}`);
 
     const remoteRepo = `https://${process.env.GITHUB_ACTOR}:${process.env.GITHUB_TOKEN}@github.com/${process.env.GITHUB_REPOSITORY}.git`;
     await runInWorkspace('git', ['tag', newVersion]);
@@ -168,9 +104,60 @@ function runInWorkspace(command, args) {
   });
 }
 
+function getReleaseType(commitMessages) {
+  if (commitMessages === 0) {
+    console.log("Couldn't find any commits in this event - incrementing patch version");
+    return 'patch';
+  }
+
+  console.log('Commit messages:', commitMessages);
+
+  // if wording for SET CUSTOM VERSION found
+  if (commitMessages.some((message) => SET_CUSTOM_VERSION_WORDING.some((word) => message.includes(word)))) {
+    return 'custom';
+  }
+  // if wording for MAJOR found
+  else if (commitMessages.some((message) => MAJOR_VERSION_WORDING.some((word) => message.includes(word)))) {
+    return 'major';
+  }
+  // if wording for MINOR found
+  else if (commitMessages.some((message) => MINOR_VERSION_WORDING.some((word) => message.includes(word)))) {
+    return 'minor';
+  }
+  // default to 'patch' if no keywords found
+  return 'patch';
+}
+
 // function for getting the highest version number, if multiple custom versions are found
 function getHighestVersionNumber(versions) {
   const versionNumbers = versions.map(version => semver.clean(version))
 
   return versionNumbers.sort(semver.rcompare)[0]
+}
+
+function incrementVersionNumber(current, type) {
+  if (!(type === 'major' || type === 'minor' || type === 'patch')) {
+    exitFailure('incrementVersionNumber: invalid release type received')
+  }
+
+  return semver.inc(current, type)
+}
+
+function getCustomVersionNumbers(commitMessages) {
+  const versionNumbers = [];
+
+  commitMessages.forEach((message) => {
+    const matches = message.match(/SET VERSION NUMBER {v?[0-9]+[.][0-9]+[.][0-9]+}/g);
+    const versionNumberRegex = new RegExp(/v?[0-9]+[.][0-9]+[.][0-9]+/g);
+    if (matches) {
+      for (let match of matches) {
+        const number = match.match(versionNumberRegex);
+        versionNumbers.push(number[0]);
+      }
+    }
+  });
+  if (versionNumbers.length === 0) {
+    exitFailure('getCustomVersionNumbers: No custom version numbers found');
+  }
+  return versionNumbers;
 }
