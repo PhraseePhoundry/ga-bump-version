@@ -58,12 +58,12 @@ const workspace = process.env.GITHUB_WORKSPACE;
     const remoteRepo = `https://${process.env.GITHUB_ACTOR}:${process.env.GITHUB_TOKEN}@github.com/${process.env.GITHUB_REPOSITORY}.git`;
     await runInWorkspace('git', ['tag', newVersion]);
     await runInWorkspace('git', ['push', remoteRepo, '--tags']);
+    console.log(`::set-output name=newTag::${newVersion}`);
   } catch (e) {
     logError(e);
     exitFailure('Failed to bump version');
     return;
   }
-  console.log(`::set-output name=newTag::${newVersion}`);
   exitSuccess('Version bumped!');
 })();
 
