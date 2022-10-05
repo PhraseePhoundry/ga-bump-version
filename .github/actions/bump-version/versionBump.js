@@ -63,6 +63,7 @@ const workspace = process.env.GITHUB_WORKSPACE;
     exitFailure('Failed to bump version');
     return;
   }
+  console.log(`::set-output name=newTag::${newVersion}`);
   exitSuccess('Version bumped!');
 })();
 
