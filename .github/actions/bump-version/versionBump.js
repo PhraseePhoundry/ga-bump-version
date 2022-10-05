@@ -42,14 +42,14 @@ const workspace = process.env.GITHUB_WORKSPACE;
     console.log('Current branch:', currentBranch);
 
     let newVersion;
-    if (version === 'custom') {
+    if (releaseType === 'custom') {
       const customVersion = getHighestVersionNumber(customVersionNumbers)
       if (!semver.gt(customVersion, latestVersion)) {
         exitFailure('New custom version must be higher than current version')
       }
       newVersion = `${TAG_PREFIX}${customVersion}`
     } else {
-      newVersion = `${TAG_PREFIX}${incrementVersionNumber(latestVersion, version)}`;
+      newVersion = `${TAG_PREFIX}${incrementVersionNumber(latestVersion, releaseType)}`;
     }
 
     console.log(`Current version: ${latestVersion}`)
