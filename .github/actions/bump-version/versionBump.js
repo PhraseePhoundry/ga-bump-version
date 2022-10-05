@@ -53,7 +53,7 @@ const workspace = process.env.GITHUB_WORKSPACE;
     }
 
     console.log(`Current version: ${latestVersion}`)
-    console.log(`Version to update to: ${TAG_PREFIX}${newVersion}`);
+    console.log(`Version to update to: ${newVersion}`);
 
     const remoteRepo = `https://${process.env.GITHUB_ACTOR}:${process.env.GITHUB_TOKEN}@github.com/${process.env.GITHUB_REPOSITORY}.git`;
     await runInWorkspace('git', ['tag', newVersion]);
