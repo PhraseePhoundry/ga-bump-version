@@ -2,7 +2,7 @@
 const { execSync, spawn } = require('child_process');
 const { EOL } = require('os');
 const semver = require('semver');
-const github = require('@actions/github')
+const core = require('@actions/core')
 
 const MAJOR_VERSION_WORDING = ['MAJOR VERSION INCREMENT', 'major', 'breaking change'];
 const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'];
@@ -15,7 +15,6 @@ const workspace = process.env.GITHUB_WORKSPACE;
 (async () => {
   
   const messages = core.getInput('commits');
-
 
   // determine the release type - one of custom, major, minor, or patch
   const releaseType = getReleaseType(messages)
