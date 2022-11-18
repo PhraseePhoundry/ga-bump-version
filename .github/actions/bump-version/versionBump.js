@@ -9,7 +9,7 @@ const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'
 const SET_CUSTOM_VERSION_WORDING = ['SET VERSION NUMBER'];
 const TAG_PREFIX = 'v'
 
-const latestVersion = process.env.CURRENT_TAG;
+const latestVersion = core.getInput('currentTag');
 const workspace = process.env.GITHUB_WORKSPACE;
 
 (async () => {
