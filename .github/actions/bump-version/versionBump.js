@@ -2,6 +2,7 @@
 const { execSync, spawn } = require('child_process');
 const { EOL } = require('os');
 const semver = require('semver');
+const github = require('@actions/github')
 
 const MAJOR_VERSION_WORDING = ['MAJOR VERSION INCREMENT', 'major', 'breaking change'];
 const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'];
@@ -14,12 +15,27 @@ const workspace = process.env.GITHUB_WORKSPACE;
 
 (async () => {
   const event = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_EVENT_PATH) : {};
-  console.log(JSON.stringify(event))
 
-  const commits = event.pull_request ? event.pull_request.commits : event.commits
-  console.log(commits)
+  let messages
+  if (event.pull_request) {
+    const octokit = new github.GitHub(process.env.GITHUB_TOKEN)
 
-  const messages = commits ? commits.map((commit) => commit.message + '\n' + commit.body) : [];
+    const commitsListed = await octokit.pulls.listCommits({
+      owner: event.repository.owner.login,
+      repo: event.repository.name,
+      pull_number: event.pull_request.number,
+    })
+
+    const commits = commitsListed.data
+    messages = commits ? commits.map((commit) => commit.message + '\n' + commit.body) : [];
+  
+  } else {
+
+    messages = event.commits ? event.commits.map((commit) => commit.message + '\n' + commit.body) : [];
+  }
+
+  console.log(messages)
+
 
   // determine the release type - one of custom, major, minor, or patch
   const releaseType = getReleaseType(messages)
