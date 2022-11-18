@@ -14,6 +14,8 @@ const workspace = process.env.GITHUB_WORKSPACE;
 
 (async () => {
   const event = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_EVENT_PATH) : {};
+  console.log('-------------------------------------------------')
+  console.log(event)
 
   const messages = event.commits ? event.commits.map((commit) => commit.message + '\n' + commit.body) : [];
 
