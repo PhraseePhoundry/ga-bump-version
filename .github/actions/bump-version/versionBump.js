@@ -14,7 +14,7 @@ const workspace = process.env.GITHUB_WORKSPACE;
 
 (async () => {
   
-  const messages = core.getInput('commits');
+  const messages = JSON.parse(core.getInput('commits'));
   console.log('------------------------')
   console.log(messages)
 
