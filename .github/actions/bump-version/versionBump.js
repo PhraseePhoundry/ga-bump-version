@@ -10,7 +10,6 @@ const SET_CUSTOM_VERSION_WORDING = ['SET VERSION NUMBER'];
 const TAG_PREFIX = 'v'
 
 const latestVersion = process.env.CURRENT_TAG;
-
 const workspace = process.env.GITHUB_WORKSPACE;
 
 (async () => {
@@ -27,7 +26,6 @@ const workspace = process.env.GITHUB_WORKSPACE;
     })
 
     const commits = commitsListed.data
-    console.log(commits)
     messages = commits ? commits.map((commit) => commit.commit.message) : [];
   
   } else {
