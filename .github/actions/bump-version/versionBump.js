@@ -17,7 +17,9 @@ const workspace = process.env.GITHUB_WORKSPACE;
   console.log('-------------------------------------------------')
   console.log(event)
 
-  const messages = event.commits ? event.commits.map((commit) => commit.message + '\n' + commit.body) : [];
+  const commits = event.pull_request ? event.pull_request.commits : event.commits
+
+  const messages = commits ? commits.map((commit) => commit.message + '\n' + commit.body) : [];
 
   // determine the release type - one of custom, major, minor, or patch
   const releaseType = getReleaseType(messages)
