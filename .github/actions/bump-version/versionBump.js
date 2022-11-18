@@ -13,27 +13,8 @@ const latestVersion = process.env.CURRENT_TAG;
 const workspace = process.env.GITHUB_WORKSPACE;
 
 (async () => {
-  const event = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_EVENT_PATH) : {};
-
-  let messages
-  if (event.pull_request) {
-    const octokit = new github.GitHub(process.env.GITHUB_TOKEN)
-
-    const commitsListed = await octokit.pulls.listCommits({
-      owner: event.repository.owner.login,
-      repo: event.repository.name,
-      pull_number: event.pull_request.number,
-    })
-
-    const commits = commitsListed.data
-    messages = commits ? commits.map((commit) => commit.commit.message) : [];
   
-  } else {
-
-    messages = event.commits ? event.commits.map((commit) => commit.message + '\n' + commit.body) : [];
-  }
-
-  console.log(messages)
+  const messages = core.getInput('commits');
 
 
   // determine the release type - one of custom, major, minor, or patch
