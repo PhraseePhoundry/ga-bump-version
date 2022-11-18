@@ -52,14 +52,6 @@ const workspace = process.env.GITHUB_WORKSPACE;
       `"${process.env.GITHUB_EMAIL || 'ga-bump-version@users.noreply.github.com'}"`
     ]);
 
-    const currentBranch = /refs\/[a-zA-Z]+\/(.*)/.exec(process.env.GITHUB_REF)[1];
-
-    if (!currentBranch) {
-      exitFailure('No branch found');
-    }
-
-    console.log('Current branch:', currentBranch);
-
     let newVersion;
     if (releaseType === 'custom') {
       const customVersion = getHighestVersionNumber(customVersionNumbers)
