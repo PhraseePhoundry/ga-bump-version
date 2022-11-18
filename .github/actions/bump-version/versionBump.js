@@ -27,6 +27,7 @@ const workspace = process.env.GITHUB_WORKSPACE;
     })
 
     const commits = commitsListed.data
+    console.log(commits)
     messages = commits ? commits.map((commit) => commit.message + '\n' + commit.body) : [];
   
   } else {
