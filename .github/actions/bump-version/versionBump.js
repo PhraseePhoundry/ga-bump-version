@@ -15,8 +15,6 @@ const workspace = process.env.GITHUB_WORKSPACE;
 (async () => {
   
   const messages = JSON.parse(core.getInput('commits'));
-  console.log('------------------------')
-  console.log(messages)
 
   // determine the release type - one of custom, major, minor, or patch
   const releaseType = getReleaseType(messages)
