@@ -2,20 +2,19 @@
 const { execSync, spawn } = require('child_process');
 const { EOL } = require('os');
 const semver = require('semver');
+const core = require('@actions/core')
 
 const MAJOR_VERSION_WORDING = ['MAJOR VERSION INCREMENT', 'major', 'breaking change'];
 const MINOR_VERSION_WORDING = ['MINOR VERSION INCREMENT', 'new feature', 'minor'];
 const SET_CUSTOM_VERSION_WORDING = ['SET VERSION NUMBER'];
 const TAG_PREFIX = 'v'
 
-const latestVersion = process.env.CURRENT_TAG;
-
+const latestVersion = core.getInput('currentTag');
 const workspace = process.env.GITHUB_WORKSPACE;
 
 (async () => {
-  const event = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_EVENT_PATH) : {};
-
-  const messages = event.commits ? event.commits.map((commit) => commit.message + '\n' + commit.body) : [];
+  
+  const messages = JSON.parse(core.getInput('commits'));
 
   // determine the release type - one of custom, major, minor, or patch
   const releaseType = getReleaseType(messages)
@@ -32,14 +31,6 @@ const workspace = process.env.GITHUB_WORKSPACE;
       'user.email',
       `"${process.env.GITHUB_EMAIL || 'ga-bump-version@users.noreply.github.com'}"`
     ]);
-
-    const currentBranch = /refs\/[a-zA-Z]+\/(.*)/.exec(process.env.GITHUB_REF)[1];
-
-    if (!currentBranch) {
-      exitFailure('No branch found');
-    }
-
-    console.log('Current branch:', currentBranch);
 
     let newVersion;
     if (releaseType === 'custom') {

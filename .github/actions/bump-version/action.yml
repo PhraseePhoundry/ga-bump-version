@@ -5,6 +5,10 @@ runs:
   main: ./versionBump.js
 
 inputs:
+  commits:
+    description: Git commit messages for the event
+    required: true
+
   currentTag:
     description: The current latest tag for the repo
     required: true
